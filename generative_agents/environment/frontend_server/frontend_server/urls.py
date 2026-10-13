@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 from translator import views as translator_views
 
+"""
 urlpatterns = [
     url(r'^$', translator_views.landing, name='landing'),
     url(r'^simulator_home$', translator_views.home, name='home'),
@@ -33,19 +34,27 @@ urlpatterns = [
     url(r'^path_tester_update/$', translator_views.path_tester_update, name='path_tester_update'),
     path('admin/', admin.site.urls),
 ]
+"""
 
 
-## kobayashi add ###
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from translator import views as translator_views
 
 urlpatterns = [
-    # 既存のルーティング...
     path('admin/', admin.site.urls),
-    path('', include('landing_page.urls')),
     
-    # 動的ログイン/ログアウト用 API
+    # translator アプリに存在するビューへのルーティング
+    path('', translator_views.landing, name='landing'),
+    path('home/<str:sim_code>/<int:step>/<int:play_speed>/', translator_views.home, name='home'),
+    path('replay/<str:sim_code>/<int:step>/', translator_views.replay, name='replay'),
+    path('replay_persona_state/<str:sim_code>/<int:step>/<str:persona_name>/', translator_views.replay_persona_state, name='replay_persona_state'),
+    path('process_environment/', translator_views.process_environment, name='process_environment'),
+    path('update_environment/', translator_views.update_environment, name='update_environment'),
+    path('path_tester/', translator_views.path_tester, name='path_tester'),
+    path('path_tester_update/', translator_views.path_tester_update, name='path_tester_update'),
+
+    # 動的ログイン/ログアウト用 API エンドポイント
     path('api/agent/login', translator_views.agent_login, name='agent_login'),
     path('api/agent/logout', translator_views.agent_logout, name='agent_logout'),
-]
+]## kobayashi add ###

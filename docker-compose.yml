@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ollama:
     image: ollama/ollama:latest
@@ -18,11 +16,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./generative_agents:/app
+    working_dir: /app/environment/frontend_server  # ← ここを追加
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/environment/frontend_server:/app/reverie/backend_server
       - OLLAMA_BASE_URL=http://ollama:11434/v1
-      - OLLAMA_MODEL=qwen3.5:3b-instruct
+      - OLLAMA_MODEL=qwen3.5:4b
+    command: python manage.py runserver 0.0.0.0:8000  # ← コマンドを直接指定
     depends_on:
       - ollama
     tty: true
