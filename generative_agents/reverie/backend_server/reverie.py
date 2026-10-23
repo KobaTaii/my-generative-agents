@@ -39,6 +39,9 @@ from utils import *
 from maze import *
 from persona.persona import *
 
+fs_storage = "../../environment/frontend_server/storage"
+fs_temp_storage = "../../environment/frontend_server/temp_storage"
+
 ##############################################################################
 #                                  REVERIE                                   #
 ##############################################################################

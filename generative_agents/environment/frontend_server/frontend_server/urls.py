@@ -36,7 +36,7 @@ urlpatterns = [
 ]
 """
 
-
+"""
 from django.contrib import admin
 from django.urls import path
 from translator import views as translator_views
@@ -57,4 +57,27 @@ urlpatterns = [
     # 動的ログイン/ログアウト用 API エンドポイント
     path('api/agent/login', translator_views.agent_login, name='agent_login'),
     path('api/agent/logout', translator_views.agent_logout, name='agent_logout'),
-]## kobayashi add ###
+]
+"""
+## kobayashi add ###
+from django.contrib import admin
+from django.urls import path
+from translator import views as translator_views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+
+    path('', translator_views.landing, name='landing'),
+    # sim_code, step, play_speed を受け取る demo ビューへルーティング
+    path('home/<str:sim_code>/<int:step>/<int:play_speed>/', translator_views.demo, name='demo'),
+    path('replay/<str:sim_code>/<int:step>/', translator_views.replay, name='replay'),
+    path('replay_persona_state/<str:sim_code>/<int:step>/<str:persona_name>/', translator_views.replay_persona_state, name='replay_persona_state'),
+    path('process_environment/', translator_views.process_environment, name='process_environment'),
+    path('update_environment/', translator_views.update_environment, name='update_environment'),
+    path('path_tester/', translator_views.path_tester, name='path_tester'),
+    path('path_tester_update/', translator_views.path_tester_update, name='path_tester_update'),
+
+    # API エンドポイント
+    path('api/agent/login', translator_views.agent_login, name='agent_login'),
+    path('api/agent/logout', translator_views.agent_logout, name='agent_logout'),
+]

@@ -16,6 +16,8 @@ from persona.prompt_template.run_gpt_prompt import *
 from persona.cognitive_modules.retrieve import *
 from persona.cognitive_modules.converse import *
 
+debug = True
+
 ##############################################################################
 # CHAPTER 2: Generate
 ##############################################################################
