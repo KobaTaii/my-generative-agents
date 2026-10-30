@@ -203,27 +203,20 @@ def generate_action_arena(act_desp, persona, maze, act_world, act_sector):
 
 
 def generate_action_game_object(act_desp, act_address, persona, maze):
-  """TODO
-  Given the action description and the act address (the address where
-  we expect the action to task place), choose one of the game objects. 
-
-  Persona state: identity stable set, n-1 day schedule, daily plan
-
-  INPUT: 
-    act_desp: the description of the action (e.g., "sleeping")
-    act_address: the arena where the action will take place: 
-               (e.g., "dolores double studio:double studio:bedroom 2")
-    persona: The Persona class instance 
-  OUTPUT: 
-    act_game_object: 
-  EXAMPLE OUTPUT: 
-    "bed"
-  """
-  if debug: print ("GNS FUNCTION: <generate_action_game_object>")
-  if not persona.s_mem.get_str_accessible_arena_game_objects(act_address): 
-    return "<random>"
-  return run_gpt_prompt_action_game_object(act_desp, persona, maze, act_address)[0]
-
+  max_retries = 2
+  for attempt in range(max_retries):
+    try:
+      act_game_object = run_gpt_prompt_action_game_object(act_desp, persona, maze)[0]
+      temp_address = f"{act_address}:{act_game_object}"
+      act_game_object_sub = persona.s_mem.get_str_accessible_arena_game_objects(temp_address)
+      return act_game_object
+    except Exception as e:
+      if attempt == max_retries - 1:
+        try:
+          curr_world, curr_sector, curr_arena = act_address.split(":")
+          return list(persona.s_mem.tree[curr_world][curr_sector][curr_arena].keys())[0]
+        except:
+          return "bed"
 
 def generate_action_pronunciatio(act_desp, persona): 
   """TODO 

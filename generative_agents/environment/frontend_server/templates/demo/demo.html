@@ -22,6 +22,14 @@
 					<button id="play_button" type="button" class="btn btn-default">
 				    <strong style=" font-size:1.2em"><i class="glyphicon glyphicon-play"></i> &nbsp;Play</strong>
 				  </button>
+                  <select id="speed_selector" class="btn btn-default" style="font-size:1.2em; font-weight:bold; height:34px; margin-left:5px;">
+                <option value="1">1x (通常)</option>
+                <option value="2">2x (2倍速)</option>
+                <option value="5">5x (5倍速)</option>
+                <option value="10">10x (10倍速)</option>
+                <option value="50">50x (50倍速)</option>
+                <option value="100" selected>100x (100倍スキップ)</option>
+              </select>
 				  
 				  <button id="pause_button" type="button" class="btn btn-default">
 				    <strong style=" font-size:1.2em"><i class="glyphicon glyphicon-pause"></i> &nbsp;Pause</strong>
@@ -153,3 +161,33 @@
 
 
 
+
+<script>
+// --- URL & LocalStorage ステップ状態保持パッチ ---
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let savedStep = urlParams.get('step') || localStorage.getItem('generative_agents_step');
+    
+    if (savedStep !== null && typeof step !== 'undefined') {
+        step = parseInt(savedStep, 10);
+        console.log("復元されたステップ:", step);
+    }
+
+    // ステップ更新時に保存・URL書き換えを行う関数をフック
+    const originalReplaceState = history.replaceState;
+    window.saveCurrentStep = function(currentStep) {
+        if (currentStep === undefined || currentStep === null) return;
+        localStorage.setItem('generative_agents_step', currentStep);
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', currentStep);
+        originalReplaceState.call(history, null, '', url.toString());
+    };
+
+    // 一定間隔で現在の step をチェックして保持
+    setInterval(function() {
+        if (typeof step !== 'undefined') {
+            window.saveCurrentStep(step);
+        }
+    }, 1000);
+})();
+</script>

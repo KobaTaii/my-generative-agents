@@ -24,8 +24,8 @@ def landing(request):
 
 
 def demo(request, sim_code, step, play_speed="2"): 
-  move_file = f"compressed_storage/{sim_code}/master_movement.json"
-  meta_file = f"compressed_storage/{sim_code}/meta.json"
+  move_file = f"storage/{sim_code}/master_movement.json"
+  meta_file = f"storage/{sim_code}/meta.json"
   step = int(step)
   play_speed_opt = {"1": 1, "2": 2, "3": 4,
                     "4": 8, "5": 16, "6": 32}
@@ -191,7 +191,7 @@ def replay_persona_state(request, sim_code, step, persona_name):
   persona_name = " ".join(persona_name.split("_"))
   memory = f"storage/{sim_code}/personas/{persona_name}/bootstrap_memory"
   if not os.path.exists(memory): 
-    memory = f"compressed_storage/{sim_code}/personas/{persona_name}/bootstrap_memory"
+    memory = f"storage/{sim_code}/personas/{persona_name}/bootstrap_memory"
 
   with open(memory + "/scratch.json") as json_file:  
     scratch = json.load(json_file)

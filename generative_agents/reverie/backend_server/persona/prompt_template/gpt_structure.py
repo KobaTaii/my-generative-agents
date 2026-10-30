@@ -35,7 +35,7 @@ def GPT4_request(prompt, model=MODEL_NAME):
 def GPT_request(prompt, model=MODEL_NAME):
     return ChatGPT_request(prompt, model)
 
-def get_embedding(text, model="qwen2.5:3b"):
+def get_embedding(text, model="qwen2.5:1.5b"):
     """
     テキストの埋め込みベクトルを取得します。
     OllamaのOpenAI互換APIを呼び出し、失敗した場合はダミーベクトル(1536次元)を返します。
@@ -80,7 +80,7 @@ def generate_prompt(prompt_input, prompt_template):
         
     return prompt
 
-def GPT_request(prompt, model="qwen2.5:3b"):
+def GPT_request(prompt, model="qwen2.5:1.5b"):
     """
     Ollama (OpenAI 互換 API) へプロンプトを送信し、テキスト応答を取得します。
     """

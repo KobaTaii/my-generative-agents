@@ -1,3 +1,17 @@
+// camera_bounds_guarded
+
+                    if (typeof camera !== undefined && camera) {
+                        if (isNaN(camera.scrollX) || camera.scrollX < 0) camera.scrollX = 1000;
+                        if (isNaN(camera.scrollY) || camera.scrollY < 0) camera.scrollY = 1000;
+                    }
+                    // movement_target_guarded
+
+function update_url_step(current_step) {
+if (typeof sim_code !== "undefined" && current_step) {
+    window.history.replaceState(null, "", "/home/" + sim_code + "/" + current_step + "/1/");
+}
+}
+window.step_jump = 100;
 {% load static %}
 
 <script type="text/javascript">
@@ -45,7 +59,7 @@
 	// Persona related variables. This should have the name of the persona as its 
 	// keys, and the instances of the Persona class as the values.
 	var spawn_tile_loc = {};
-	var personas = {};
+	var personas = ({}).replace(/ /g, "_");
 	var pronunciatios = {};
 	let anims_direction;
 	let pre_anims_direction;
@@ -232,7 +246,7 @@
 	  // *** SET UP PERSONAS *** 
 	  // We start by creating the game sprite objects. 
 	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) { 
-	    let persona_name = Object.keys(spawn_tile_loc)[i];
+	    let persona_name = (Object.keys(spawn_tile_loc)[i]).replace(/ /g, "_");
 	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width + tile_width / 2, 
 	                     spawn_tile_loc[persona_name][1] * tile_width + tile_width];
 	    let new_sprite = this.physics.add
@@ -334,3 +348,44 @@
 
 
 
+
+setInterval(function(){ 
+  if (typeof step !== "undefined" && typeof sim_code !== "undefined") { 
+      window.history.replaceState(null, "", "/home/" + sim_code + "/" + step + "/" + movement_speed + "/"); 
+  } 
+}, 1000);
+$(document).ready(function() {
+$('#speed_selector').change(function() {
+    movement_speed = parseFloat($(this).val());
+});
+});
+
+<script>
+// --- URL & LocalStorage ステップ状態保持パッチ ---
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let savedStep = urlParams.get('step') || localStorage.getItem('generative_agents_step');
+    
+    if (savedStep !== null && typeof step !== 'undefined') {
+        step = parseInt(savedStep, 10);
+        console.log("復元されたステップ:", step);
+    }
+
+    // ステップ更新時に保存・URL書き換えを行う関数をフック
+    const originalReplaceState = history.replaceState;
+    window.saveCurrentStep = function(currentStep) {
+        if (currentStep === undefined || currentStep === null) return;
+        localStorage.setItem('generative_agents_step', currentStep);
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', currentStep);
+        originalReplaceState.call(history, null, '', url.toString());
+    };
+
+    // 一定間隔で現在の step をチェックして保持
+    setInterval(function() {
+        if (typeof step !== 'undefined') {
+            window.saveCurrentStep(step);
+        }
+    }, 1000);
+})();
+</script>

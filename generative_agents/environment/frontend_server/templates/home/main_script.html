@@ -1,3 +1,43 @@
+
+<script id="persona_click_fix">
+document.addEventListener('DOMContentLoaded', function() {
+    // replace エラー等による全停止をガード
+    window.addEventListener('error', function(e) {
+        if (e.message && e.message.includes('replace')) {
+            e.stopImmediatePropagation();
+        }
+    }, true);
+
+    setTimeout(function() {
+        if (typeof $ !== 'undefined') {
+            $(document).on('click', '.media, .media-body, [id*="persona"], img, div', function() {
+                try {
+                    let targetText = $(this).text() + ' ' + ($(this).attr('id') || '');
+                    let match = targetText.match(/(Isabella_Rodriguez|Maria_Lopez|Klaus_Mueller|Isabella Rodriguez|Maria Lopez|Klaus Mueller)/i);
+                    if (match && typeof personas !== 'undefined' && typeof cameras !== 'undefined' && cameras.main) {
+                        let nameKey = match[0].trim().replace(/\s+/g, '_');
+                        let p = personas[nameKey] || personas[match[0].trim()];
+                        if (p && !isNaN(p.x) && !isNaN(p.y)) {
+                            cameras.main.pan(p.x, p.y, 500);
+                        }
+                    }
+                } catch(err) {
+                    console.warn("Camera pan bypassed:", err);
+                }
+            });
+        }
+    }, 1000);
+});
+</script>
+
+
+// camera_bounds_guarded
+
+                    if (typeof camera !== undefined && camera) {
+                        if (isNaN(camera.scrollX) || camera.scrollX < 0) camera.scrollX = 1000;
+                        if (isNaN(camera.scrollY) || camera.scrollY < 0) camera.scrollY = 1000;
+                    }
+                    // movement_target_guarded
 {% load static %}
 
 <div id="step" style="display:none">{{step}}</div>
@@ -31,7 +71,7 @@
 	// a step. We use this to link the steps in the backend. 
 	let step = parseInt(document.getElementById('step').innerHTML);
 	let sim_code = document.getElementById('sim_code').innerHTML;
-	// let persona_names = document.getElementById('persona_name_list').innerHTML.split(",");
+	// let persona_names = (document.getElementById('persona_name_list').innerHTML.split(",")).replace(/ /g, "_");
 
 	let spans = document.getElementById('persona_init_pos').getElementsByTagName('span');
 	let persona_names = {};
@@ -278,8 +318,8 @@
 
 	  // *** SET UP PERSONAS *** 
 	  // We start by creating the game sprite objects. 
-	  for (let i=0; i<Object.keys(spawn_tile_loc).length; i++) { 
-	    let persona_name = Object.keys(spawn_tile_loc)[i];
+	  for (let i=0; i<Object.keys(spawn_tile_loc || {}).length; i++) { 
+	    let persona_name = (Object.keys(spawn_tile_loc || {})[i]).replace(/ /g, "_");
 	    let start_pos = [spawn_tile_loc[persona_name][0] * tile_width + tile_width / 2, 
 	                     spawn_tile_loc[persona_name][1] * tile_width + tile_width];
 	    let new_sprite = this.physics.add
@@ -377,8 +417,8 @@
 	    let data = {"step": step, 
 	    						"sim_code": sim_code,
 	                "environment": {}}
-	    for (let i=0; i<Object.keys(personas).length; i++) {
-	      let persona_name = Object.keys(personas)[i];
+	    for (let i=0; i<Object.keys(personas || {}).length; i++) {
+	      let persona_name = (Object.keys(personas || {})[i]).replace(/ /g, "_");
 	      data["environment"][persona_name] = {"maze": curr_maze,
 	                                           "x": Math.ceil((personas[persona_name].body.position.x) / tile_width),
 	                                           "y": Math.ceil((personas[persona_name].body.position.y) / tile_width)}
@@ -432,10 +472,10 @@
 	    // The execute_count_max is computed by tile_width/movement_speed, which
 	    // defines a one step sequence in this world. 
 	    document.getElementById("game-time-content").innerHTML = execute_movement["meta"]["curr_time"];
-	    for (let i=0; i<Object.keys(personas).length; i++) {
-	      let curr_persona_name = Object.keys(personas)[i];
+	    for (let i=0; i<Object.keys(personas || {}).length; i++) {
+	      let curr_persona_name = Object.keys(personas || {})[i];
 	      let curr_persona = personas[curr_persona_name];
-	      let curr_pronunciatio = pronunciatios[Object.keys(personas)[i]];
+	      let curr_pronunciatio = pronunciatios[Object.keys(personas || {})[i]];
 
 	      if (execute_count == execute_count_max) { 
 	        let curr_x = execute_movement["persona"][curr_persona_name]["movement"][0];
@@ -456,22 +496,22 @@
 
 	      console.log(curr_persona_name);
 	      if (execute_count > 0) {
-	        if (curr_persona.body.x < movement_target[curr_persona_name][0]) {
+	        if (curr_persona.body.x < (movement_target[curr_persona_name] ? movement_target[curr_persona_name][0] : -1) && typeof movement_target !== "undefined") {
 	          curr_persona.body.x += movement_speed; 
 	          anims_direction = "r";
 	          pre_anims_direction = "r"
 	          pre_anims_direction_dict[curr_persona_name] = "r"
-	        } else if (curr_persona.body.x > movement_target[curr_persona_name][0]) {
+	        } else if (curr_persona.body.x > (movement_target[curr_persona_name] ? movement_target[curr_persona_name][0] : -1) && typeof movement_target !== "undefined") {
 	          curr_persona.body.x -= movement_speed; 
 	          anims_direction = "l";
 	          pre_anims_direction = "l"
 	          pre_anims_direction_dict[curr_persona_name] = "l"
-	        } else if (curr_persona.body.y < movement_target[curr_persona_name][1]) {
+	        } else if (curr_persona.body.y < (movement_target[curr_persona_name] ? movement_target[curr_persona_name][1] : [0, 0])) {
 	          curr_persona.body.y += movement_speed;
 	          anims_direction = "d";
 	          pre_anims_direction = "d"
 	          pre_anims_direction_dict[curr_persona_name] = "d"
-	        } else if (curr_persona.body.y > movement_target[curr_persona_name][1]) {
+	        } else if (curr_persona.body.y > (movement_target[curr_persona_name] ? movement_target[curr_persona_name][1] : [0, 0])) {
 	          curr_persona.body.y -= movement_speed;
 	          anims_direction = "u";
 	          pre_anims_direction = "u"
@@ -506,11 +546,11 @@
 	        // Once we are done moving the personas, we move on to the "process"
 	        // stage where we will send the current locations of all personas at the
 	        // end of the movemments to the frontend server, and then the backend.
-	        for (let i=0; i<Object.keys(personas).length; i++) {
-	          let curr_persona_name = Object.keys(personas)[i]
+	        for (let i=0; i<Object.keys(personas || {}).length; i++) {
+	          let curr_persona_name = Object.keys(personas || {})[i]
 	          let curr_persona = personas[curr_persona_name];
-	          curr_persona.body.x = movement_target[curr_persona_name][0];
-	          curr_persona.body.y = movement_target[curr_persona_name][1];
+	          curr_persona.body.x = (movement_target[curr_persona_name] ? movement_target[curr_persona_name][0] : -1);
+	          curr_persona.body.y = (movement_target[curr_persona_name] ? movement_target[curr_persona_name][1] : [0, 0]);
 	        }
 	        phase = "process";
 	        execute_count = execute_count_max + 1;
@@ -520,9 +560,9 @@
 
 	    // Filling in the action description. 
 	    if (execute_count == execute_count_max) { 
-	      for (let i=0; i<Object.keys(personas).length; i++) {
+	      for (let i=0; i<Object.keys(personas || {}).length; i++) {
 	      	let action_description = ""
-	        let curr_persona_name = Object.keys(personas)[i];
+	        let curr_persona_name = Object.keys(personas || {})[i];
 	        let curr_persona_name_os = curr_persona_name.replace(/ /g,"_");
 	        let description_content = execute_movement["persona"][curr_persona_name]["description"];
 	        let chat_content = ""
@@ -558,3 +598,33 @@
 
 
 
+
+<script>
+// --- URL & LocalStorage ステップ状態保持パッチ ---
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let savedStep = urlParams.get('step') || localStorage.getItem('generative_agents_step');
+    
+    if (savedStep !== null && typeof step !== 'undefined') {
+        step = parseInt(savedStep, 10);
+        console.log("復元されたステップ:", step);
+    }
+
+    // ステップ更新時に保存・URL書き換えを行う関数をフック
+    const originalReplaceState = history.replaceState;
+    window.saveCurrentStep = function(currentStep) {
+        if (currentStep === undefined || currentStep === null) return;
+        localStorage.setItem('generative_agents_step', currentStep);
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', currentStep);
+        originalReplaceState.call(history, null, '', url.toString());
+    };
+
+    // 一定間隔で現在の step をチェックして保持
+    setInterval(function() {
+        if (typeof step !== 'undefined') {
+            window.saveCurrentStep(step);
+        }
+    }, 1000);
+})();
+</script>

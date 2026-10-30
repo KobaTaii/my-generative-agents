@@ -77,3 +77,33 @@
 {% include 'home/main_script.html' %}
 {% endblock content %}
 
+
+<script>
+// --- URL & LocalStorage ステップ状態保持パッチ ---
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let savedStep = urlParams.get('step') || localStorage.getItem('generative_agents_step');
+    
+    if (savedStep !== null && typeof step !== 'undefined') {
+        step = parseInt(savedStep, 10);
+        console.log("復元されたステップ:", step);
+    }
+
+    // ステップ更新時に保存・URL書き換えを行う関数をフック
+    const originalReplaceState = history.replaceState;
+    window.saveCurrentStep = function(currentStep) {
+        if (currentStep === undefined || currentStep === null) return;
+        localStorage.setItem('generative_agents_step', currentStep);
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', currentStep);
+        originalReplaceState.call(history, null, '', url.toString());
+    };
+
+    // 一定間隔で現在の step をチェックして保持
+    setInterval(function() {
+        if (typeof step !== 'undefined') {
+            window.saveCurrentStep(step);
+        }
+    }, 1000);
+})();
+</script>
